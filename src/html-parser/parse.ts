@@ -33,6 +33,10 @@ export function toTokens(raw: string): string[] {
       buf += c;
     } else {
       buf += c;
+      if (i === raw.length - 1) {
+        buf = ignore3(buf);
+        if (buf) res.push(buf);
+      }
     }
   }
   return res;
@@ -47,7 +51,7 @@ interface ITag {
 }
 
 const digits = /^\d+$/;
-const alpha_dash = /^[a-zA-Z\-]+$/;
+const alpha_dash_num = /^[a-zA-Z\-\d]+$/;
 
 export function toTag(raw: string): ITag {
   if (raw.charAt(0) !== "<" || raw.charAt(raw.length - 1) !== ">") {
@@ -68,7 +72,7 @@ export function toTag(raw: string): ITag {
       return this._name;
     },
     set name(n: string) {
-      if (!alpha_dash.test(n)) {
+      if (!alpha_dash_num.test(n)) {
         error("Invalid name: " + n);
       }
       this._name = n;
@@ -122,14 +126,53 @@ export function toTag(raw: string): ITag {
 }
 
 interface INode {
-  name: string;
+  name: string | symbol;
   attributes?: {
     [attr: string]: string | boolean | number;
   };
-  children: INode[];
+  children?: (INode | string)[];
 }
 
-function parse(raw: string) {}
+export function parseHtml(raw: string): (INode | string)[] {
+  const tags = toTokens(raw).map(i => (i.startsWith("<") ? toTag(i) : i));
+  let stack: (INode | ITag | string)[] = [];
+  let openingTagCount = 0;
+  for (let tag of tags) {
+    if (typeof tag === "string") {
+      stack.push(tag);
+    } else if (tag.type === "left") {
+      stack.push(tag);
+      openingTagCount++;
+    } else if (tag.type === "selfClosing") {
+      stack.push({
+        name: tag.name,
+        attributes: tag.attributes,
+      });
+    } else if (tag.type === "right") {
+      let lastTagIndex = stack.length - 1;
+      while (lastTagIndex >= 0 && !stack[lastTagIndex]["type"]) lastTagIndex--;
+      if (lastTagIndex < 0) error(`No matching opening tag for: ${tag.name}`);
+      const newStack = stack.slice(0, lastTagIndex);
+      const prevTag = stack[lastTagIndex] as ITag;
+      if (prevTag.name !== tag.name)
+        error(
+          `Mismatch tag: ` +
+            `opening tag => ${prevTag.name}, closing tag => ${tag.name}`,
+        );
+      const children = stack.slice(lastTagIndex + 1);
+      const node = {
+        name: prevTag.name,
+        attributes: prevTag.attributes,
+        children,
+      };
+      newStack.push(node);
+      stack = newStack;
+      openingTagCount--;
+    }
+  }
+  if (openingTagCount > 0) error("Invalid html, tag(s) not closed");
+  return stack;
+}
 
 function error(msg: string) {
   const errorMsg = msg || "Invalid html!";

@@ -1,4 +1,4 @@
-import { toTokens, toTag } from "./parse";
+import { toTokens, toTag, parseHtml } from "./parse";
 // Does nothing
 // Just for editor syntax highlight
 const html = (i: TemplateStringsArray) => i[0];
@@ -70,6 +70,18 @@ describe("To raw tags (string)", () => {
   test("Does not crash on invalid input", () => {
     const res = () => toTokens(raw2);
     expect(res).not.toThrow();
+  });
+
+  const raw2 = "Just text";
+  test(raw2, () => {
+    const res = toTokens(raw2);
+    expect(res).toEqual([raw2]);
+  });
+
+  const raw3 = "text <div>123</div> txet";
+  test(raw3, () => {
+    const res = toTokens(raw3);
+    expect(res).toEqual(["text", "<div>", "123", "</div>", "txet"]);
   });
 });
 
@@ -155,5 +167,84 @@ describe("String to tag", () => {
         src: "imeigi",
       },
     });
+  });
+});
+
+describe("Parse html", () => {
+  test("Simple normal", () => {
+    const res = parseHtml(raw1);
+    const output = [
+      {
+        name: "html",
+        children: [
+          {
+            name: "head",
+            children: [
+              {
+                name: "title",
+                children: ["Page Title"],
+              },
+            ],
+          },
+          {
+            name: "body",
+            children: [
+              {
+                name: "h1",
+                attributes: {
+                  class: "c1",
+                  id: "some-id",
+                },
+                children: ["This is a Heading"],
+              },
+              {
+                name: "div",
+                attributes: {
+                  class: "c2",
+                },
+                children: [
+                  "Text1 Text2",
+                  {
+                    name: "p",
+                    children: ["This is a paragraph."],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    expect(res).toEqual(output);
+  });
+
+  const raw2 = "Just text";
+  test(raw2, () => {
+    const res = parseHtml(raw2);
+    expect(res).toEqual([raw2]);
+  });
+
+  const raw3 = "<div>O mae wa mou shin de i ru<div>";
+  test(`Invalid html: ${raw3}`, () => {
+    const res = () => parseHtml(raw3);
+    expect(res).toThrowError(/not closed/i);
+  });
+
+  const raw4 = "<div>O mae wa mou shin de i ru";
+  test(`Invalid html: ${raw4}`, () => {
+    const res = () => parseHtml(raw4);
+    expect(res).toThrowError(/not closed/i);
+  });
+
+  const raw5 = "O mae wa mou shin de i ru</div>";
+  test(`Invalid html: ${raw5}`, () => {
+    const res = () => parseHtml(raw5);
+    expect(res).toThrowError(/no matching opening tag/i);
+  });
+
+  const raw6 = "<p>O mae wa mou shin de i ru</div>";
+  test(`Invalid html: ${raw6}`, () => {
+    const res = () => parseHtml(raw6);
+    expect(res).toThrowError(/mismatch tag/i);
   });
 });
