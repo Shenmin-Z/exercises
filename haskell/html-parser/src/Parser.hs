@@ -36,16 +36,19 @@ isClosing c | '>' /= char c = False
 
 betweenQuotes :: CharInfo -> Bool
 betweenQuotes (CharInfo _ (_, col) text) =
-  let index         = col - 1
-      textWithIndex = zip text [0 ..]
-      quoteIndexes  = fmap snd $filter (isRealQuote text) textWithIndex
-      isRealQuote text (c, i) | not $isQuote c = False
-                              | i == 0        = True
-                              | otherwise     = '\\' /= text !! (i - 1)
-      quoteGroups = fmap (\i -> (quoteIndexes !! i, quoteIndexes !! (i + 1)))
-                         [0, 2 .. length quoteIndexes - 2]
+  let index       = col - 1
+      qIndexes    = quoteIndexes text
+      quoteGroups = fmap (\i -> (qIndexes !! i, qIndexes !! (i + 1)))
+                         [0, 2 .. length qIndexes - 2]
       between i (x, y) = i <= y && i >= x
   in  any (between index) quoteGroups
+
+quoteIndexes :: String -> [Int]
+quoteIndexes text = fmap snd $filter (isRealQuote text) textWithIndex where
+  textWithIndex = zip text [0 ..]
+  isRealQuote text (c, i) | not $isQuote c = False
+                          | i == 0        = True
+                          | otherwise     = '\\' /= text !! (i - 1)
 
 isQuote :: Char -> Bool
 isQuote c = c == '\'' || c == '"'
