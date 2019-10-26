@@ -4,45 +4,79 @@ import           Data.List                      ( foldl' )
 import           Control.Monad                  ( foldM )
 import           Data.Char                      ( isSpace )
 
-type Position = (Int, Int)
-type CharInfo = (Char, (Position, String))
+{- #####################################################################
+ - Pre-process Steps
+ -}
 
-toCharInfo :: String -> [CharInfo]
+type Position = (Int, Int)
+data CharInfo = CharInfo {
+  char::Char,
+  position:: Position,
+  line::String
+} deriving (Show)
+type PString = [CharInfo]
+
+toCharInfo :: String -> PString
 toCharInfo input =
   let textLines = zip (lines input) [1 ..]
-      withRow :: (String, Int) -> [CharInfo]
+      withRow :: (String, Int) -> PString
       withRow (line, row) = fmap (info line row) (lineCols line)
       lineCols line = take (length line) [1 ..]
-      info line row col =
-          let c        = line !! col
-              charInfo = ((row, col), line)
-          in  (c, charInfo)
+      info line row col = CharInfo (line !! (col - 1)) (row, col) line
   in  textLines >>= withRow
 
-type RawTag = String
-type TextBuf = String
+isOpening :: CharInfo -> Bool
+isOpening c = '<' == char c
+
+isClosing :: CharInfo -> Bool
+isClosing c = '>' == char c
+
+
+printPosition :: CharInfo -> String
+printPosition (CharInfo _ p _) = show p
+
+toString :: PString -> String
+toString = fmap char
+
+
+
+{- #####################################################################
+ - String to tags
+ -}
+
+type RawTag = PString
+type TextBuf = PString
 type IntermediateRawTags = ([RawTag], TextBuf)
 type IntermediateRawTagsResult = Either String IntermediateRawTags
 
 toTags :: String -> IntermediateRawTagsResult
-toTags = foldM reduceTags ([], []) where
-  reduceTags :: IntermediateRawTags -> Char -> IntermediateRawTagsResult
-  reduceTags (rawTags, textBuf) c | c == '>'  = createTag rawTags textBuf
-                                  | c == '<'  = createNonTag rawTags textBuf
+toTags input = foldM reduceTags ([], []) (toCharInfo input) where
+  reduceTags :: IntermediateRawTags -> CharInfo -> IntermediateRawTagsResult
+  reduceTags (rawTags, textBuf) c | isClosing c = createTag rawTags textBuf c
+                                  | isOpening c = createNonTag rawTags textBuf c
                                   | otherwise = Right (rawTags, textBuf ++ [c])
 
-createTag :: [RawTag] -> TextBuf -> IntermediateRawTagsResult
-createTag rawTags textBuf =
-  let content = textBuf ++ ['>']
-  in  if tagValid content
+createTag :: [RawTag] -> TextBuf -> CharInfo -> IntermediateRawTagsResult
+createTag rawTags textBuf c =
+  let content       = textBuf ++ [c]
+      contentString = toString content
+  in  if tagValid contentString
         then Right (rawTags ++ [content], [])
-        else Left ("Invalid: " ++ content)
+        else Left
+          (  "Parsing error: "
+          ++ "\""
+          ++ [char c]
+          ++ "\" at "
+          ++ printPosition c
+          ++ "\n"
+          ++ show (line c)
+          )
 
 tagValid :: String -> Bool
 tagValid tagText = head (trim tagText) == '<'
 
-createNonTag :: [RawTag] -> TextBuf -> IntermediateRawTagsResult
-createNonTag rawTags textBuf = Right (rawTags ++ [trim textBuf], "<")
+createNonTag :: [RawTag] -> TextBuf -> CharInfo -> IntermediateRawTagsResult
+createNonTag rawTags textBuf c = Right (rawTags ++ [textBuf], [c])
 
 trim :: String -> String
 trim = f . f where f = reverse . dropWhile isSpace
