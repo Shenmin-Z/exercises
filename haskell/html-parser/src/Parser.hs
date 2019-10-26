@@ -3,6 +3,7 @@ module Parser where
 import           Data.List                      ( foldl' )
 import           Control.Monad                  ( foldM )
 import           Data.Char                      ( isSpace )
+import           Debug.Trace
 
 {- #####################################################################
  - Pre-process Steps
@@ -26,11 +27,28 @@ toCharInfo input =
   in  textLines >>= withRow
 
 isOpening :: CharInfo -> Bool
-isOpening c = '<' == char c
+isOpening c | '<' /= char c = False
+            | otherwise     = not $ betweenQuotes c
 
 isClosing :: CharInfo -> Bool
-isClosing c = '>' == char c
+isClosing c | '>' /= char c = False
+            | otherwise     = not $ betweenQuotes c
 
+betweenQuotes :: CharInfo -> Bool
+betweenQuotes (CharInfo _ (_, col) text) =
+  let index         = col - 1
+      textWithIndex = zip text [0 ..]
+      quoteIndexes  = fmap snd $filter (isRealQuote text) textWithIndex
+      isRealQuote text (c, i) | not $isQuote c = False
+                              | i == 0        = True
+                              | otherwise     = '\\' /= text !! (i - 1)
+      quoteGroups = fmap (\i -> (quoteIndexes !! i, quoteIndexes !! (i + 1)))
+                         [0, 2 .. length quoteIndexes - 2]
+      between i (x, y) = i <= y && i >= x
+  in  any (between index) quoteGroups
+
+isQuote :: Char -> Bool
+isQuote c = c == '\'' || c == '"'
 
 printPosition :: CharInfo -> String
 printPosition (CharInfo _ p _) = show p
