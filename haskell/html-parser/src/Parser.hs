@@ -22,12 +22,21 @@ instance Show CharInfo  where
 
 toCharInfo :: String -> PString
 toCharInfo input =
-  let textLines = zip (lines input) [1 ..]
+  let textLines = zip (addBackNewLineChar $lines input) [1 ..]
       withRow :: (String, Int) -> PString
       withRow (line, row) = fmap (info line row) (lineCols line)
       lineCols line = take (length line) [1 ..]
       info line row col = CharInfo (line !! (col - 1)) (row, col) line
   in  textLines >>= withRow
+
+addBackNewLineChar :: [String] -> [String]
+addBackNewLineChar l
+  | length l >= 2
+  = let front   = init l
+        withNLC = fmap (++ "\n") front
+    in  withNLC ++ [last l]
+  | otherwise
+  = l
 
 isOpening :: CharInfo -> Bool
 isOpening c | '<' /= char c = False

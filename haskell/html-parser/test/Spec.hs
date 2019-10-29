@@ -45,7 +45,8 @@ main = hspec $ do
         ss3 = "<a>a<>"
         ss4 = "<a>a</>"
         ss5 = "<'<'>a</>"
-        ss6 = "<a b='c'>123</a>"
+        ss6 = "<a b='c\\<'>123</a>"
+        ss7 = " <a>\n<b>\n\t 888 </b>\n</a\n>\n "
     it "1" $ toTags' s1 `shouldBe` Right []
     it "2" $ toTags' s2 `shouldBe` Left (printError (toCharInfo s2 !! 1))
     it "3" $ toTags' s3 `shouldBe` Left (printError (toCharInfo s3 !! 2))
@@ -66,4 +67,6 @@ main = hspec $ do
     it "5" $ rawTagsCharOnly (toTags' ss5) `shouldBe` Right
       ["<'<'>", "a", "</>"]
     it "6" $ rawTagsCharOnly (toTags' ss6) `shouldBe` Right
-      ["<a b='c'>", "123", "</a>"]
+      ["<a b='c\\<'>", "123", "</a>"]
+    it "7" $ rawTagsCharOnly (toTags' ss7) `shouldBe` Right
+      [" ", "<a>", "\n", "<b>", "\n\t 888 ", "</b>", "\n", "</a\n>", "\n "]
