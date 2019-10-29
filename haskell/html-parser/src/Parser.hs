@@ -14,8 +14,11 @@ data CharInfo = CharInfo {
   char::Char,
   position:: Position,
   line::String
-} deriving (Show)
+} deriving (Eq)
 type PString = [CharInfo]
+
+instance Show CharInfo  where
+  show c = [char c]
 
 toCharInfo :: String -> PString
 toCharInfo input =
@@ -54,7 +57,17 @@ isQuote :: Char -> Bool
 isQuote c = c == '\'' || c == '"'
 
 printPosition :: CharInfo -> String
-printPosition (CharInfo _ p _) = show p
+printPosition (CharInfo _ (row, col) _) = ":" ++ show row ++ ":" ++ show col
+
+printError :: CharInfo -> String
+printError c =
+  "Parsing error: "
+    ++ "\""
+    ++ [char c]
+    ++ "\" at "
+    ++ printPosition c
+    ++ "\n"
+    ++ show (line c)
 
 toString :: PString -> String
 toString = fmap char
@@ -77,27 +90,46 @@ toTags input = foldM reduceTags ([], []) (toCharInfo input) where
                                   | isOpening c = createNonTag rawTags textBuf c
                                   | otherwise = Right (rawTags, textBuf ++ [c])
 
+toTags' :: String -> Either String [RawTag]
+toTags' input = do
+  (rawTags, textBuf) <- toTags input
+  let trimmed = trim $ toString textBuf
+  if null trimmed
+    then return $ filter (not . null) (addTag rawTags textBuf)
+    else Left (printError $ last textBuf)
+
 createTag :: [RawTag] -> TextBuf -> CharInfo -> IntermediateRawTagsResult
 createTag rawTags textBuf c =
   let content       = textBuf ++ [c]
       contentString = toString content
   in  if tagValid contentString
-        then Right (rawTags ++ [content], [])
-        else Left
-          (  "Parsing error: "
-          ++ "\""
-          ++ [char c]
-          ++ "\" at "
-          ++ printPosition c
-          ++ "\n"
-          ++ show (line c)
-          )
+        then Right (addTag rawTags content, [])
+        else Left (printError c)
 
 tagValid :: String -> Bool
-tagValid tagText = head (trim tagText) == '<'
+tagValid tagText | null trimmed = False
+                 | otherwise    = hasOpening && hasClosing
+ where
+  trimmed    = trim tagText
+  hasOpening = head trimmed == '<'
+  hasClosing = last trimmed == '>'
+
 
 createNonTag :: [RawTag] -> TextBuf -> CharInfo -> IntermediateRawTagsResult
-createNonTag rawTags textBuf c = Right (rawTags ++ [textBuf], [c])
+createNonTag rawTags textBuf c | null trimmed        = result
+                               | null rawTags        = err
+                               | head trimmed == '<' = err
+                               | otherwise           = result
+ where
+  trimmed = trim $ toString textBuf
+  result  = Right (addTag rawTags textBuf, [c])
+  err     = Left (printError c)
+
+addTag :: [RawTag] -> RawTag -> [RawTag]
+addTag rawTags t = rawTags ++ [t]
 
 trim :: String -> String
 trim = f . f where f = reverse . dropWhile isSpace
+
+trimP :: PString -> PString
+trimP = f . f where f = reverse . dropWhile (isSpace . char)
