@@ -7,9 +7,7 @@ rawTagsCharOnly cs = do
   return $fmap toString rawTags
 
 closingTagCharOnly :: Either String ClosingTag -> Either String String
-closingTagCharOnly t = do
-  tag <- t
-  return $ toString tag
+closingTagCharOnly t = toString <$> t
 
 main :: IO ()
 main = hspec $ do

@@ -179,3 +179,5 @@ pwords s = case dropWhile isSpace' s of
   where isSpace' = isSpace . char
 
 --parseOpening :: String -> Either String OpeningTag
+--parseOpening s
+  
