@@ -142,3 +142,40 @@ trim = f . f where f = reverse . dropWhile isSpace
 
 trimP :: PString -> PString
 trimP = f . f where f = reverse . dropWhile (isSpace . char)
+
+
+
+{- #####################################################################
+ - Inside tag
+ -}
+
+isTag :: PString -> Bool
+isTag s | length s < 2 = False
+        | otherwise    = char (head s) == '<' && char (last s) == '>'
+
+removeBracket :: PString -> PString
+removeBracket = init . tail
+
+isClosingTag :: PString -> Bool
+isClosingTag s | null wds                    = False
+               | char (head $head wds) == '/' = True
+               | otherwise                   = False
+  where wds = dropWhile null $pwords $ removeBracket s
+
+type Attribute = (PString, PString)
+type OpeningTag = (PString, [Attribute])
+type ClosingTag = PString
+
+parseClosing :: PString -> Either String ClosingTag
+parseClosing s | length wds == 1 = Right (tail $ head wds)
+               | length wds == 2 = Right (wds !! 1)
+               | otherwise       = Left (printError $head (wds !! 2))
+  where wds = filter (not . null) $pwords $ removeBracket s
+
+pwords :: PString -> [PString]
+pwords s = case dropWhile isSpace' s of
+  [] -> []
+  s' -> w : pwords s'' where (w, s'') = break isSpace' s'
+  where isSpace' = isSpace . char
+
+--parseOpening :: String -> Either String OpeningTag

@@ -4,8 +4,12 @@ import           Parser
 rawTagsCharOnly :: Either String [RawTag] -> Either String [String]
 rawTagsCharOnly cs = do
   rawTags <- cs
-  let chars = fmap toString rawTags
-  return chars
+  return $fmap toString rawTags
+
+closingTagCharOnly :: Either String ClosingTag -> Either String String
+closingTagCharOnly t = do
+  tag <- t
+  return $ toString tag
 
 main :: IO ()
 main = hspec $ do
@@ -70,3 +74,35 @@ main = hspec $ do
       ["<a b='c\\<'>", "123", "</a>"]
     it "7" $ rawTagsCharOnly (toTags' ss7) `shouldBe` Right
       [" ", "<a>", "\n", "<b>", "\n\t 888 ", "</b>", "\n", "</a\n>", "\n "]
+  describe "Inside tag" $ do
+    let s1 = "lalala"
+        s2 = "<>"
+        s3 = "</>" --closing
+        s4 = "</a>"
+        s5 = "</ a>"
+        s6 = "</ a >"
+        s7 = "</ abc >"
+        s8 = "</ a b>"
+    it "1" $ isTag (toCharInfo s1) `shouldBe` False
+    it "2" $ isTag (toCharInfo s2) `shouldBe` True
+    it "2" $ isClosingTag (toCharInfo s2) `shouldBe` False
+    it "3" $ isTag (toCharInfo s3) `shouldBe` True
+    it "3" $ isClosingTag (toCharInfo s3) `shouldBe` True
+    it "4" $ isTag (toCharInfo s4) `shouldBe` True
+    it "4" $ isClosingTag (toCharInfo s4) `shouldBe` True
+    it "5" $ isClosingTag (toCharInfo s5) `shouldBe` True
+    it "6" $ isClosingTag (toCharInfo s6) `shouldBe` True
+    it "7" $ isClosingTag (toCharInfo s7) `shouldBe` True
+    it "8" $ isClosingTag (toCharInfo s8) `shouldBe` True
+    it "3" $ closingTagCharOnly (parseClosing $toCharInfo s3) `shouldBe` Right
+      ""
+    it "4" $ closingTagCharOnly (parseClosing $toCharInfo s4) `shouldBe` Right
+      "a"
+    it "5" $ closingTagCharOnly (parseClosing $toCharInfo s5) `shouldBe` Right
+      "a"
+    it "6" $ closingTagCharOnly (parseClosing $toCharInfo s6) `shouldBe` Right
+      "a"
+    it "7" $ closingTagCharOnly (parseClosing $toCharInfo s7) `shouldBe` Right
+      "abc"
+    it "8" $ closingTagCharOnly (parseClosing $toCharInfo s8) `shouldBe` Left
+      "Parsing error: \"b\" at :1:6\n\"</ a b>\""
