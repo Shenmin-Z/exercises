@@ -13,12 +13,12 @@ class SeedWrapper<S> {
     return this.seed;
   }
 }
-class Done<S> extends SeedWrapper<S> {}
-class Skip<S> extends SeedWrapper<S> {}
-class Continue<S> extends SeedWrapper<S> {}
+export class Done<S> extends SeedWrapper<S> {}
+export class Skip<S> extends SeedWrapper<S> {}
+export class Continue<S> extends SeedWrapper<S> {}
 
-type Iterate<S> = Done<S> | Skip<S> | Continue<S>;
-type Iterator<S> = (a: S, b: Info) => Iterate<S>;
+export type Iterate<S> = Done<S> | Skip<S> | Continue<S>;
+export type Iterator<S> = (a: S, b: Info) => Iterate<S>;
 
 export async function foldTree<S>(
   iter: Iterator<S>,
@@ -37,8 +37,9 @@ export async function foldTree<S>(
     seed: S,
     [name, ...names]: FilePath[],
   ): Promise<SeedWrapper<S>> {
+    if (!name) return new Continue(seed);
     const path_ = join(path, name);
-    const info = getInfo(path_);
+    const info = await getInfo(path_);
     const seedWrapper = iter(seed, info);
     if (seedWrapper instanceof Done) {
       return seedWrapper;

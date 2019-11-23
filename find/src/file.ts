@@ -16,9 +16,7 @@ export type Permissions = {
 };
 
 const { F_OK, R_OK, W_OK, X_OK } = constants;
-export function getFilePermissions(
-  path: FilePath,
-): Promise<Maybe<Permissions>> {
+function getFilePermissions(path: FilePath): Promise<Maybe<Permissions>> {
   function check(mode: number) {
     return new Promise(resolve => {
       access(path, mode, err => {
@@ -46,7 +44,7 @@ export function getFilePermissions(
   });
 }
 
-export function getFileStat(path: FilePath): Promise<Maybe<Stats>> {
+function getFileStats(path: FilePath): Promise<Maybe<Stats>> {
   return new Promise(resolve => {
     stat(path, (err, stats) => {
       if (err) resolve(new Nothing());
@@ -55,11 +53,13 @@ export function getFileStat(path: FilePath): Promise<Maybe<Stats>> {
   });
 }
 
-export function getInfo(path: FilePath): Info {
+export async function getInfo(path: FilePath): Promise<Info> {
+  const infoPerms = await getFilePermissions(path);
+  const infoStats = await getFileStats(path);
   return {
     infoPath: path,
-    infoPerms: getFilePermissions(path),
-    infoStats: getFileStat(path),
+    infoPerms,
+    infoStats,
   };
 }
 
@@ -74,6 +74,10 @@ export function getUsefulContents(path: FilePath): Promise<Array<FilePath>> {
 
 export function isDirectory(info: Info): boolean {
   return MaybeTernary(info.infoStats, false, stats => stats.isDirectory());
+}
+
+export function getFilePath(info: Info): FilePath {
+  return info.infoPath;
 }
 
 interface Stats {
