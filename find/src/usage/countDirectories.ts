@@ -13,8 +13,8 @@ const findDirectories: Iterator<FilePath[]> = (dirs, info) => {
   return new Continue(directories);
 };
 
-const dir = join(__dirname, "../../../");
+const dir = join(__dirname, "../../../../ngm-site-www");
 const r1 = foldTree(countDirectories, 0, dir);
-const r2 = foldTree(findDirectories, [], dir);
 printResult(r1);
+const r2 = foldTree(findDirectories, [], dir);
 printResult(r2);
