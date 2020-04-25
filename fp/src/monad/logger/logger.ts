@@ -1,4 +1,4 @@
-import { Monad, Chain, chain, Seq, seq, Inject } from "../Monad";
+import { Monad, Of } from "../monad";
 
 export type Log = string[];
 
@@ -19,6 +19,10 @@ export class Logger<T extends unknown> extends Monad<T> {
     return new Logger([newData, log.concat(newLog)]);
   }
 
+  seq<B>(b: Logger<B>): Logger<B> {
+    return super.seq(b) as Logger<B>;
+  }
+
   static execLogger<U>(logger: Logger<U>): [U, Log] {
     return [logger.data, logger.log];
   }
@@ -27,11 +31,11 @@ export class Logger<T extends unknown> extends Monad<T> {
     return new Logger([null, [s]]);
   }
 
-  static inject<U>(d: U) {
+  static of<U>(d: U) {
     return new Logger<U>([d, null]);
   }
 }
 
 export let runLogger = Logger.execLogger;
 export let record = Logger.record;
-export let injectLogger: Inject = <T>(d: T) => Logger.inject(d);
+export let injectLogger: Of = <T>(d: T) => Logger.of(d);

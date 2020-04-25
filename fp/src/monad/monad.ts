@@ -11,14 +11,16 @@ export type Chain = {
 
 export let chain: Chain = a => f => a.chain(f);
 
+// >>=
 export type Seq = {
   <A, B>(a: Monad<A>): (b: Monad<B>) => Monad<B>;
 };
 
+// >>
 export let seq: Seq = <A, B>(a: Monad<A>) => (b: Monad<B>) =>
   chain(a)(_ => b) as Monad<B>;
 
 // return
-export type Inject = {
+export type Of = {
   <A>(a: A): Monad<A>;
 };
