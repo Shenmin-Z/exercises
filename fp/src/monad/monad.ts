@@ -3,6 +3,7 @@ export abstract class Monad<A> {
   seq<B>(b: Monad<B>): Monad<B> {
     return seq<A, B>(this)(b);
   }
+  abstract of<B>(b: B): Monad<B>;
 }
 
 export type Chain = {
@@ -24,3 +25,6 @@ export let seq: Seq = <A, B>(a: Monad<A>) => (b: Monad<B>) =>
 export type Of = {
   <A>(a: A): Monad<A>;
 };
+
+export let liftM = <A, B>(f: (a: A) => B) => (a: Monad<A>) =>
+  a.chain(i => a.of(f(i)));

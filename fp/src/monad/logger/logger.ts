@@ -23,6 +23,10 @@ export class Logger<T extends unknown> extends Monad<T> {
     return super.seq(b) as Logger<B>;
   }
 
+  of<U>(d: U) {
+    return new Logger<U>([d, null]);
+  }
+
   static execLogger<U>(logger: Logger<U>): [U, Log] {
     return [logger.data, logger.log];
   }
@@ -30,12 +34,8 @@ export class Logger<T extends unknown> extends Monad<T> {
   static record(s: string): Logger<any> {
     return new Logger([null, [s]]);
   }
-
-  static of<U>(d: U) {
-    return new Logger<U>([d, null]);
-  }
 }
 
 export let runLogger = Logger.execLogger;
 export let record = Logger.record;
-export let injectLogger: Of = <T>(d: T) => Logger.of(d);
+export let ofLogger = Logger.prototype.of;
