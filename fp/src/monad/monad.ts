@@ -28,3 +28,7 @@ export type Of = {
 
 export let liftM = <A, B>(f: (a: A) => B) => (a: Monad<A>) =>
   a.chain(i => a.of(f(i)));
+
+export let liftM2 = <A, B, C>(f: (a: A) => (b: B) => C) => (a: Monad<A>) => (
+  b: Monad<B>
+) => a.chain(i => b.chain(j => a.of(f(i)(j))));

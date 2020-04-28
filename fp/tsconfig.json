@@ -2,6 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "module": "CommonJS",
+    "lib": ["ES6"],
+    "downlevelIteration": true,
     "outDir": "dist"
   },
   "include": ["src/**/*"]

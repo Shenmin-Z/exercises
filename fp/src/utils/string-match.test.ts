@@ -2,10 +2,6 @@ import { smatch } from "./string-match";
 
 test("smatch: invalid", () => {
   expect(() => {
-    smatch("", `asd`, () => {});
-  }).toThrowError("Invalid pattern.");
-
-  expect(() => {
     smatch("", `'!':`, () => {});
   }).toThrowError("Invalid pattern.");
 
@@ -72,8 +68,32 @@ test("", () => {
   expect(fn).toHaveBeenCalledTimes(0);
 });
 
-test("", () => {
+test("last is empty", () => {
   let fn = jest.fn((a, b, c) => {});
   smatch("ab", `a:b:c`, fn);
   expect(fn).toBeCalledWith("a", "b", "");
+});
+
+test("No colon 1", () => {
+  let fn = jest.fn(() => {});
+  smatch("ab", `''`, fn);
+  expect(fn).toHaveBeenCalledTimes(0);
+});
+
+test("No colon 2", () => {
+  let fn = jest.fn(() => {});
+  smatch("", `''`, fn);
+  expect(fn).toBeCalled();
+});
+
+test("No colon 3", () => {
+  let fn = jest.fn(() => {});
+  smatch("!!", `'!!'`, fn);
+  expect(fn).toBeCalled();
+});
+
+test("No colon 4", () => {
+  let fn = jest.fn(c => {});
+  smatch("ab", `c`, fn);
+  expect(fn).toBeCalledWith("ab");
 });

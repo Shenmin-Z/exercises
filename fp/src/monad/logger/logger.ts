@@ -1,4 +1,4 @@
-import { Monad, Of } from "../monad";
+import { Monad } from "../monad";
 
 export type Log = string[];
 
