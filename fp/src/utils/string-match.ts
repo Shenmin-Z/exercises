@@ -14,12 +14,22 @@ export let smatch = <T extends unknown>(
   // Condition 1:
   if (pRegex1.test(pattern)) {
     if (isS(pattern)) {
+      if (fn.length !== 0) {
+        throw new Error(
+          `Callback does not match pattern: ${pattern}. Expected callback to have 0 argument.`
+        );
+      }
       if (s === pattern.substring(1, pattern.length - 1)) {
         return fn();
       } else {
         return NO_MATCH;
       }
     } else {
+      if (fn.length !== 1) {
+        throw new Error(
+          `Callback does not match pattern: ${pattern}. Expected callback to have 1 argument.`
+        );
+      }
       return fn(s);
     }
   }
@@ -29,8 +39,13 @@ export let smatch = <T extends unknown>(
 
   let ps = pattern.split(":");
 
-  if (ps.filter(isA).length !== fn.length)
-    throw new Error("Callback does not match pattern.");
+  if (ps.filter(isA).length !== fn.length) {
+    throw new Error(
+      `Callback does not match pattern: ${pattern}. Expected callback to have ${
+        ps.filter(isA).length
+      } argument.`
+    );
+  }
 
   let pointer = 0;
   let args = [];

@@ -11,7 +11,7 @@ test("smatch: invalid", () => {
 
   expect(() => {
     smatch("", `'!':cs`, () => {});
-  }).toThrowError("Callback does not match pattern.");
+  }).toThrowError(/Callback does not match pattern/);
 });
 
 test("smatch: valid", () => {

@@ -1,5 +1,14 @@
-import { Logger, record, ofLogger, liftM, liftM2 } from "../../monad";
+import {
+  Logger,
+  record,
+  runLogger,
+  ofLogger,
+  liftM,
+  liftM2
+} from "../../monad";
 import { smatch, NO_MATCH, runUntil } from "../../utils";
+
+export let globToRegex = (s: string) => new RegExp(runLogger(g2r(s))[0]);
 
 export let g2r = (s: string): Logger<string> =>
   _g2r(s).chain(ds => ofLogger("^" + ds));
@@ -9,11 +18,11 @@ let _g2r = (s: string): Logger<string> =>
     [
       () => smatch(s, `''`, () => ofLogger("$")),
       () =>
-        smatch(s, `'?'`, cs =>
+        smatch(s, `'?':cs`, cs =>
           record("any").seq(_g2r(cs).chain(ds => ofLogger("." + ds)))
         ),
       () =>
-        smatch(s, `'*'`, cs =>
+        smatch(s, `'*':cs`, cs =>
           record("kleene start").seq(_g2r(cs).chain(ds => ofLogger(".*" + ds)))
         ),
       () =>
@@ -29,7 +38,7 @@ let _g2r = (s: string): Logger<string> =>
           )
         ),
       () =>
-        smatch(s, `'['`, _ => {
+        smatch(s, `'['`, () => {
           throw new Error("unterminated character class");
         }),
       () =>
@@ -44,7 +53,8 @@ let charClass = (s: string): Logger<string> =>
   runUntil(
     [
       () => smatch(s, `']':cs`, cs => liftM((s: string) => "]" + s)(_g2r(cs))),
-      () => smatch(s, `c:cs`, (c, cs) => liftM((s: string) => c + s)(_g2r(cs)))
+      () =>
+        smatch(s, `c:cs`, (c, cs) => liftM((s: string) => c + s)(charClass(cs)))
     ],
     r => r !== NO_MATCH
   ) as Logger<string>;
