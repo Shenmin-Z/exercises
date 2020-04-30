@@ -1,6 +1,6 @@
 import { Monad } from "../monad";
 
-export class List<T extends unknown> extends Monad<T> {
+export class List<T> extends Monad<T> {
   private data: T[];
 
   private constructor(data: T[]) {
@@ -8,7 +8,7 @@ export class List<T extends unknown> extends Monad<T> {
     this.data = data;
   }
 
-  chain<U>(fn: (a: T) => List<U>): List<U> {
+  bind<U>(fn: (a: T) => List<U>): List<U> {
     let tmp: U[] = [];
     for (let i of this.data.map(fn)) {
       tmp = tmp.concat(i.data);

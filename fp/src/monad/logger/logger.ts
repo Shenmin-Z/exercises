@@ -2,7 +2,7 @@ import { Monad } from "../monad";
 
 export type Log = string[];
 
-export class Logger<T extends unknown> extends Monad<T> {
+export class Logger<T> extends Monad<T> {
   private data: T;
   private log: Log;
 
@@ -12,7 +12,7 @@ export class Logger<T extends unknown> extends Monad<T> {
     this.data = d;
   }
 
-  chain<U>(fn: (a: T) => Logger<U>): Logger<U> {
+  bind<U>(fn: (a: T) => Logger<U>): Logger<U> {
     let [data, log] = Logger.execLogger(this);
     let newLogger = fn(data);
     let [newData, newLog] = Logger.execLogger<U>(newLogger);

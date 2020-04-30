@@ -11,7 +11,7 @@ import { smatch, NO_MATCH, runUntil } from "../../utils";
 export let globToRegex = (s: string) => new RegExp(runLogger(g2r(s))[0]);
 
 export let g2r = (s: string): Logger<string> =>
-  _g2r(s).chain(ds => ofLogger("^" + ds));
+  _g2r(s).bind(ds => ofLogger("^" + ds));
 
 let _g2r = (s: string): Logger<string> =>
   runUntil(
@@ -19,22 +19,22 @@ let _g2r = (s: string): Logger<string> =>
       () => smatch(s, `''`, () => ofLogger("$")),
       () =>
         smatch(s, `'?':cs`, cs =>
-          record("any").seq(_g2r(cs).chain(ds => ofLogger("." + ds)))
+          record("any").seq(_g2r(cs).bind(ds => ofLogger("." + ds)))
         ),
       () =>
         smatch(s, `'*':cs`, cs =>
-          record("kleene start").seq(_g2r(cs).chain(ds => ofLogger(".*" + ds)))
+          record("kleene start").seq(_g2r(cs).bind(ds => ofLogger(".*" + ds)))
         ),
       () =>
         smatch(s, `'[!':c:cs`, (c, cs) =>
           record("character class, negative").seq(
-            charClass(cs).chain(ds => ofLogger("[^" + c + ds))
+            charClass(cs).bind(ds => ofLogger("[^" + c + ds))
           )
         ),
       () =>
         smatch(s, `'[':c:cs`, (c, cs) =>
           record("character class").seq(
-            charClass(cs).chain(ds => ofLogger("[" + c + ds))
+            charClass(cs).bind(ds => ofLogger("[" + c + ds))
           )
         ),
       () =>

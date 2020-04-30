@@ -13,8 +13,8 @@ export let multiple2 = (target: number): Pair[] => {
   let ls = (start: number) => createList(range(start, target));
 
   return ls(1)
-    .chain(x =>
-      ls(x).chain(y => guarded(x * y === target)(ofList([x, y])) as List<Pair>)
+    .bind(x =>
+      ls(x).bind(y => guarded(x * y === target)(ofList([x, y])) as List<Pair>)
     )
     .exec();
 };

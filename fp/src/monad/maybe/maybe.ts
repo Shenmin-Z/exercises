@@ -9,7 +9,7 @@ export class Maybe<T extends unknown> extends Monad<T> {
     super();
   }
 
-  chain<U>(fn: (a: T) => Maybe<U>): Maybe<U> {
+  bind<U>(fn: (a: T) => Maybe<U>): Maybe<U> {
     if (this.type === "Just") {
       return fn(this.data as T);
     } else {
@@ -30,7 +30,7 @@ export class Maybe<T extends unknown> extends Monad<T> {
   }
 
   ofNothing() {
-    return new Maybe("Nothing");
+    return new Maybe("Nothing") as Maybe<any>;
   }
 
   maybe<U>(def: U, f: (a: T) => U): U {

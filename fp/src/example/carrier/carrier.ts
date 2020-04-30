@@ -31,8 +31,8 @@ export let lookupAddressFromPerson = (
   addressMap: AddressMap
 ): Maybe<BillingAddress> =>
   lookup<string>(person)(phoneMap)
-    .chain(num => lookup<string>(num)(carrierMap))
-    .chain(carrier => lookup<string>(carrier)(addressMap));
+    .bind(num => lookup<string>(num)(carrierMap))
+    .bind(carrier => lookup<string>(carrier)(addressMap));
 
 type Lookup2 = {
   <V>(m: { [s: string]: V }): (key: string) => Maybe<V>;
@@ -53,5 +53,5 @@ export let lookupAddressFromPerson2 = (
   addressMap: AddressMap
 ): Maybe<BillingAddress> =>
   lookup2<string>(phoneMap)(person)
-    .chain(lookup2<string>(carrierMap))
-    .chain(lookup2<string>(addressMap));
+    .bind(lookup2<string>(carrierMap))
+    .bind(lookup2<string>(addressMap));
