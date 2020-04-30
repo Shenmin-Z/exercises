@@ -3,9 +3,9 @@ import { Monad } from "../monad";
 type InternalType = "Just" | "Nothing";
 
 export class Maybe<T extends unknown> extends Monad<T> {
-  constructor(type: "Just", data: T);
-  constructor(type: "Nothing");
-  constructor(private type: InternalType, private data?: T) {
+  private constructor(type: "Just", data: T);
+  private constructor(type: "Nothing");
+  private constructor(private type: InternalType, private data?: T) {
     super();
   }
 
@@ -29,6 +29,10 @@ export class Maybe<T extends unknown> extends Monad<T> {
     return new Maybe<U>("Just", d);
   }
 
+  ofNothing() {
+    return new Maybe("Nothing");
+  }
+
   maybe<U>(def: U, f: (a: T) => U): U {
     if (this.type === "Just") {
       return f(this.data as T);
@@ -37,3 +41,6 @@ export class Maybe<T extends unknown> extends Monad<T> {
     }
   }
 }
+
+export let ofMaybe = Maybe.prototype.of;
+export let ofNothing = Maybe.prototype.ofNothing;

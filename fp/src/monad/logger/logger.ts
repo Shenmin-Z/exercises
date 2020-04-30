@@ -6,7 +6,7 @@ export class Logger<T extends unknown> extends Monad<T> {
   private data: T;
   private log: Log;
 
-  constructor([d, s]: [T, Log | null]) {
+  private constructor([d, s]: [T, Log | null]) {
     super();
     this.log = s ? s : [];
     this.data = d;

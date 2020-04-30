@@ -1,4 +1,4 @@
-import { Maybe } from "../../monad";
+import { Maybe, ofMaybe, ofNothing } from "../../monad";
 
 export type PersonName = string;
 export type PhoneNumber = string;
@@ -18,9 +18,9 @@ type Lookup = {
 
 let lookup: Lookup = key => map => {
   if (map[key] !== undefined) {
-    return new Maybe("Just", map[key]);
+    return ofMaybe<any>(map[key]);
   } else {
-    return new Maybe("Nothing");
+    return ofNothing();
   }
 };
 
@@ -33,3 +33,25 @@ export let lookupAddressFromPerson = (
   lookup<string>(person)(phoneMap)
     .chain(num => lookup<string>(num)(carrierMap))
     .chain(carrier => lookup<string>(carrier)(addressMap));
+
+type Lookup2 = {
+  <V>(m: { [s: string]: V }): (key: string) => Maybe<V>;
+};
+
+let lookup2: Lookup2 = map => key => {
+  if (map[key] !== undefined) {
+    return ofMaybe<any>(map[key]);
+  } else {
+    return ofNothing();
+  }
+};
+
+export let lookupAddressFromPerson2 = (
+  person: PersonName,
+  phoneMap: PhoneMap,
+  carrierMap: CarrierMap,
+  addressMap: AddressMap
+): Maybe<BillingAddress> =>
+  lookup2<string>(phoneMap)(person)
+    .chain(lookup2<string>(carrierMap))
+    .chain(lookup2<string>(addressMap));

@@ -1,5 +1,6 @@
 import {
   lookupAddressFromPerson,
+  lookupAddressFromPerson2,
   PhoneMap,
   CarrierMap,
   AddressMap
@@ -56,6 +57,31 @@ test("carrier", () => {
   ).toEqual(defaultAddress);
   expect(
     lookupAddressFromPerson("fubuki", phoneMap, carrierMap, addressMap).maybe(
+      defaultAddress,
+      _ => _
+    )
+  ).toEqual(defaultAddress);
+
+  expect(
+    lookupAddressFromPerson2("matsuri", phoneMap, carrierMap, addressMap).maybe(
+      defaultAddress,
+      _ => _
+    )
+  ).toEqual(defaultAddress);
+  expect(
+    lookupAddressFromPerson2("siro", phoneMap, carrierMap, addressMap).maybe(
+      defaultAddress,
+      _ => _
+    )
+  ).toEqual("LaLa Land");
+  expect(
+    lookupAddressFromPerson2("kaguya", phoneMap, carrierMap, addressMap).maybe(
+      defaultAddress,
+      _ => _
+    )
+  ).toEqual(defaultAddress);
+  expect(
+    lookupAddressFromPerson2("fubuki", phoneMap, carrierMap, addressMap).maybe(
       defaultAddress,
       _ => _
     )
