@@ -1,9 +1,10 @@
+import { Monad } from "../monad";
+
 type RunState<S, A> = {
   (s: S): [A, S];
 };
 
-// Tried to extend Monad but Typescript won't let me :(
-export class State<S, A> {
+export class State<S, A> implements Monad<A> {
   private constructor(public runState: RunState<S, A>) {}
 
   bind<B>(k: (a: A) => State<S, B>) {
@@ -13,8 +14,8 @@ export class State<S, A> {
     });
   }
 
-  static of<_S, _A>(rs: RunState<_S, _A>): State<_S, _A> {
-    return new State(rs);
+  of<_S, _A>(a: _A): State<_S, _A> {
+    return new State(s => [a, s]);
   }
 
   static get = new State<any, any>(s => [s, s]);
@@ -24,6 +25,6 @@ export class State<S, A> {
   }
 }
 
-export let ofState = State.of;
+export let ofState = State.prototype.of;
 export let get = State.get;
 export let put = State.put;

@@ -1,13 +1,12 @@
-import { Monad } from "../monad";
+import { Monad, seq } from "../monad";
 
 export type Log = string[];
 
-export class Logger<T> extends Monad<T> {
+export class Logger<T> implements Monad<T> {
   private data: T;
   private log: Log;
 
   private constructor([d, s]: [T, Log | null]) {
-    super();
     this.log = s ? s : [];
     this.data = d;
   }
@@ -20,7 +19,7 @@ export class Logger<T> extends Monad<T> {
   }
 
   seq<B>(b: Logger<B>): Logger<B> {
-    return super.seq(b) as Logger<B>;
+    return seq(this)(b) as Logger<B>;
   }
 
   of<U>(d: U) {

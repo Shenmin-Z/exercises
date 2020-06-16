@@ -2,12 +2,10 @@ import { Monad } from "../monad";
 
 type InternalType = "Just" | "Nothing";
 
-export class Maybe<T extends unknown> extends Monad<T> {
+export class Maybe<T extends unknown> implements Monad<T> {
   private constructor(type: "Just", data: T);
   private constructor(type: "Nothing");
-  private constructor(private type: InternalType, private data?: T) {
-    super();
-  }
+  private constructor(private type: InternalType, private data?: T) {}
 
   bind<U>(fn: (a: T) => Maybe<U>): Maybe<U> {
     if (this.type === "Just") {

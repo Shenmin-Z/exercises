@@ -1,10 +1,9 @@
 import { Monad } from "../monad";
 
-export class List<T> extends Monad<T> {
+export class List<T> implements Monad<T> {
   private data: T[];
 
   private constructor(data: T[]) {
-    super();
     this.data = data;
   }
 
@@ -14,10 +13,6 @@ export class List<T> extends Monad<T> {
       tmp = tmp.concat(i.data);
     }
     return new List(tmp);
-  }
-
-  seq<B>(b: List<B>): List<B> {
-    return super.seq(b) as List<B>;
   }
 
   exec() {
