@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="1618" height="1000"></canvas>
+    <script>
+      let canvas = document.getElementById("myCanvas");
+      let context = canvas.getContext("2d");
+
+      let RATE = 0.618;
+      let s0 = {
+        step: 0,
+        x: 618,
+        y: 1000,
+        pos: 1,
+        r: 1000
+      };
+
+      let getNext = ({ step, x, y, pos, r }) => {
+        let nx, ny;
+        if (pos === 1) {
+          nx = x;
+          ny = y - r + RATE * r;
+        }
+        if (pos === 2) {
+          nx = x - r + RATE * r;
+          ny = y;
+        }
+        if (pos === 3) {
+          nx = x;
+          ny = y + r - RATE * r;
+        }
+        if (pos === 4) {
+          nx = x + r - RATE * r;
+          ny = y;
+        }
+        let nr = RATE * r;
+        return {
+          x: nx,
+          y: ny,
+          step: step + 1,
+          pos: pos + 1 > 4 ? 1 : pos + 1,
+          r: nr
+        };
+      };
+
+      let draw = ({ step, x, y, pos, r }) => {
+        let start, end;
+        if (pos === 1) {
+          start = 0;
+          end = 1.5 * Math.PI;
+        }
+        if (pos === 2) {
+          start = 1.5 * Math.PI;
+          end = Math.PI;
+        }
+        if (pos === 3) {
+          start = Math.PI;
+          end = 0.5 * Math.PI;
+        }
+        if (pos === 4) {
+          start = 0.5 * Math.PI;
+          end = 0;
+        }
+        context.arc(x, y, r, start, end, true);
+        context.stroke();
+      };
+
+      let total = 9;
+      let current = s0;
+      let steps = [];
+      for (let i = 0; i < total; i++) {
+        steps.push(current);
+        current = getNext(current);
+      }
+      steps.forEach(draw);
+    </script>
+  </body>
+</html>

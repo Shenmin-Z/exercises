@@ -25,7 +25,11 @@ export let async_factorial = (n: number, cb: (a: number) => void) => {
   } else {
     process.nextTick(() => {
       async_factorial(n - 1, res => {
-        cb(n * res);
+        try {
+          cb(n * res);
+        } catch (e) {
+          console.log(e.stack.split("\n")[0]);
+        }
       });
     });
   }
