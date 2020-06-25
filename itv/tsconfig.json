@@ -5,7 +5,8 @@
     "lib": ["ES6"],
     "target": "ES6",
     "downlevelIteration": true,
+    "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }

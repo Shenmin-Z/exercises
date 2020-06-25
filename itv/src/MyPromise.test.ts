@@ -17,6 +17,15 @@ new MyPromise(res => {
   console.log(x);
 });
 
+new MyPromise((_, rej) => {
+  rej("rejected");
+}).then(
+  _ => {},
+  x => {
+    console.log(x);
+  }
+);
+
 MyPromise.resolve(1)
   .then(x => {
     console.log(x);

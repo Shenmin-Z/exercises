@@ -14,9 +14,11 @@ export class MyPromise<T, U = any> {
         });
       },
       rejected => {
-        if (this.onReject !== null) {
-          this.onReject(rejected);
-        }
+        process.nextTick(() => {
+          if (this.onReject !== null) {
+            this.onReject(rejected);
+          }
+        });
       }
     );
   }
