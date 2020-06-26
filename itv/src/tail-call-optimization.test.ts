@@ -20,19 +20,23 @@ const BIG = 100000;
 try {
   factorial(BIG);
 } catch (e) {
-  console.log(e.name);
+  console.log("Normal:    ", e.name);
 }
 
 try {
   TCO_factorial(BIG);
 } catch (e) {
-  console.log(e.name);
+  console.log("TCO:       ", e.name);
 }
 
-async_factorial(BIG, res => {
-  console.log(res);
+async_factorial(BIG, (error, res) => {
+  if (error) {
+    console.error("Async:     ", error.name);
+  } else {
+    console.log(res);
+  }
 });
 
 TCO_async_factorial(BIG, res => {
-  console.log(res);
+  console.log("TOC Async: ", res);
 });

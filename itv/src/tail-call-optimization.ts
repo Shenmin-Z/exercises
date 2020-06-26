@@ -18,21 +18,32 @@ export let TCO_factorial = (n: number): number => {
   return _factorial(n - 1, n);
 };
 
-export let async_factorial = (n: number, cb: (a: number) => void) => {
-  guard(n);
-  if (n === 1) {
-    cb(1);
-  } else {
-    process.nextTick(() => {
-      async_factorial(n - 1, res => {
-        try {
-          cb(n * res);
-        } catch (e) {
-          console.log(e.stack.split("\n")[0]);
-        }
+export let async_factorial = (
+  n: number,
+  cb: (error: any, a: number | null) => void
+) => {
+  let _async_factorial = (
+    n: number,
+    _cb: (error: any, a: number | null) => void
+  ) => {
+    guard(n);
+    if (n === 1) {
+      _cb(null, 1);
+    } else {
+      process.nextTick(() => {
+        _async_factorial(n - 1, res => {
+          try {
+            _cb(null, n * res);
+          } catch (e) {
+            process.nextTick(() => {
+              cb(e, null);
+            });
+          }
+        });
       });
-    });
-  }
+    }
+  };
+  return _async_factorial(n, cb);
 };
 
 export let TCO_async_factorial = (n: number, cb: (a: number) => void) => {
