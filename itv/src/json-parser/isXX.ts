@@ -10,9 +10,10 @@ export let isNUMBER = `-?(${isINT})(\\.\\d+)?(${isEXP})?`;
 /********** String **********/
 let isHEX = `[0-9a-fA-F]`;
 
-let isUNICODE = `\\u${isHEX}${isHEX}${isHEX}${isHEX}`;
+let isUNICODE = `u${isHEX}${isHEX}${isHEX}${isHEX}`;
 
 let isESC = `\\\\(["\\\\\\/bfnrt]|${isUNICODE})`;
 
-let isSAFECODEPOINT = `[^\\u0000-\\u001F]`;
-export let isSTRING = `"(${isESC}|${isSAFECODEPOINT})*"`;
+let isSAFECODEPOINT = `[^\\u{0000}-\\u{001F}]`;
+
+export let isSTRING = `"(${isESC}|${isSAFECODEPOINT})*?"`;
