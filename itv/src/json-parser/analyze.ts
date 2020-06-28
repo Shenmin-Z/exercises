@@ -1,10 +1,10 @@
-import { Token } from "./tokenize";
+import { Token, TokenType } from "./tokenize";
 
 type ContextType = "obj" | "arr" | "other";
 type Context = {
   type: ContextType;
   value?: any;
-  children?: {
+  children: {
     key?: string;
     value: Context | null;
   }[];
@@ -17,98 +17,89 @@ export let analyze = (tokens: Token[]): Context => {
     rootContext = c;
   };
 
+  let is = (type: TokenType) => {
+    let res = tokens[pointer].type === type;
+    if (res) pointer++;
+    return res;
+  };
+
+  let take = (type: TokenType): Token["content"] => {
+    if (tokens[pointer].type !== type) {
+      throw new Error(`Expected ${type}, get ${tokens[pointer].type}`);
+    }
+    pointer++;
+    return tokens[pointer - 1].content;
+  };
+
+  let createChild = (key?: string) => {
+    let newChild: { key?: string; value: Context | null } = {
+      key,
+      value: null
+    };
+    setContext = c => {
+      newChild.value = c;
+    };
+    return newChild;
+  };
+
   let analyzeObj = (context: Context) => {
     let step = () => {
-      let key = tokens?.[pointer];
-      if (key?.type !== "string") {
-        throw new Error(`Expected string, get ${key.content}`);
-      }
-      pointer++;
-      if (tokens?.[pointer]?.type !== "colon") {
-        throw new Error(`Expected :, get ${tokens[pointer].content}`);
-      }
-      pointer++;
-      let newChild: { key?: string; value: Context | null } = {
-        key: key.content,
-        value: null
-      };
-      setContext = c => {
-        newChild.value = c;
-      };
-      if (context.children === undefined) context.children = [];
-      context.children.push(newChild);
+      let key = take("string");
+      take("colon");
+      context.children.push(createChild(key));
       analyzeValue();
     };
 
-    if (tokens[pointer]?.type === "curly-right") {
-      pointer++;
+    if (is("curly-right")) {
       return;
     }
 
     step();
 
-    while (tokens?.[pointer]?.type === "comma") {
-      pointer++;
+    while (is("comma")) {
       step();
     }
 
-    if (tokens?.[pointer]?.type !== "curly-right") {
-      throw new Error(`Expected }, get ${tokens?.[pointer]?.type}`);
-    }
-    pointer++;
+    take("curly-right");
   };
 
   let analyzeArr = (context: Context) => {
     let step = () => {
-      let newChild: { key?: string; value: Context | null } = {
-        value: null
-      };
-      setContext = c => {
-        newChild.value = c;
-      };
-      if (context.children === undefined) context.children = [];
-      context.children.push(newChild);
+      context.children.push(createChild());
       analyzeValue();
     };
 
-    if (tokens[pointer]?.type === "bracket-right") {
-      pointer++;
+    if (is("bracket-right")) {
       return;
     }
 
     step();
 
-    while (tokens?.[pointer]?.type === "comma") {
-      pointer++;
+    while (is("comma")) {
       step();
     }
 
-    if (tokens?.[pointer]?.type !== "bracket-right") {
-      throw new Error(`Expected ], get ${tokens?.[pointer]?.type}`);
-    }
-    pointer++;
+    take("bracket-right");
   };
 
   let analyzeValue = () => {
-    let current = tokens[pointer];
-    pointer++;
-    if (current.type === "curly-left") {
+    if (is("curly-left")) {
       let newContext: Context = { type: "obj", children: [] };
       setContext(newContext);
       analyzeObj(newContext);
-    } else if (current.type === "bracket-left") {
+    } else if (is("bracket-left")) {
       let newContext: Context = { type: "arr", children: [] };
       setContext(newContext);
       analyzeArr(newContext);
     } else if (
-      current.type === "null" ||
-      current.type === "true" ||
-      current.type === "false" ||
-      current.type === "number" ||
-      current.type === "string"
+      is("null") ||
+      is("true") ||
+      is("false") ||
+      is("number") ||
+      is("string")
     ) {
       let value: any;
-      switch (current.type) {
+      switch (tokens[pointer - 1].type) {
         case "null":
           value = null;
           break;
@@ -119,11 +110,11 @@ export let analyze = (tokens: Token[]): Context => {
           value = false;
           break;
         default:
-          value = current.content;
+          value = tokens[pointer - 1].content;
       }
-      setContext({ type: "other", value });
+      setContext({ type: "other", value, children: [] });
     } else {
-      throw new Error(`Unexpected token: ${current.type}`);
+      throw new Error(`Unexpected token: ${tokens[pointer].type}`);
     }
   };
 

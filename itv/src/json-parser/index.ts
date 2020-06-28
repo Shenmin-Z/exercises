@@ -19,11 +19,16 @@ let tests = [
   { a: [] },
   {
     a: 123,
-    b: [true, { b0: { b1: { b2: { b3: [null, ["haha"]] } } } }]
+    b: [
+      true,
+      {
+        b0: { b1: { b2: { b3: [null, ["haha"]] } }, c: [[{}], 233, { o: {} }] }
+      }
+    ]
   }
 ];
 
 tests.forEach(i => {
-  let test = JSON.stringify(i);
+  let test = JSON.stringify(i, null, 2);
   console.log(JSON.stringify(JSONParse(test), null, 2));
 });

@@ -17,3 +17,6 @@ let isESC = `\\\\(["\\\\\\/bfnrt]|${isUNICODE})`;
 let isSAFECODEPOINT = `[^\\u{0000}-\\u{001F}]`;
 
 export let isSTRING = `"(${isESC}|${isSAFECODEPOINT})*?"`;
+
+/********** WS **********/
+export let isWS = "[\\t\\r\\n\\s]";

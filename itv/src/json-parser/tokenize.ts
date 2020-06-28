@@ -1,6 +1,6 @@
-import { isNUMBER, isSTRING } from "./isXX";
+import { isNUMBER, isSTRING, isWS } from "./isXX";
 
-type TokenType =
+export type TokenType =
   | "string"
   | "number"
   | "true"
@@ -15,19 +15,15 @@ type TokenType =
 
 export type Token = {
   type: TokenType;
-  content?: string;
+  content: string;
 };
 
 export let tokenize = (input: string): Token[] => {
   let result: Token[] = [];
   let pointer = 0;
 
-  let match = (
-    pattern: string,
-    type: TokenType,
-    getContent = false
-  ) => (): Token | null => {
-    let regex = RegExp(`^[\\t\\r\\n\\s]*(${pattern})`, "u");
+  let match = (regexString: string, type: TokenType) => (): Token | null => {
+    let regex = RegExp(`^${isWS}*(${regexString})`, "u");
     if (regex.test(input.substring(pointer))) {
       let [whole, content] = regex.exec(
         input.substring(pointer)
@@ -36,18 +32,11 @@ export let tokenize = (input: string): Token[] => {
         throw new Error(`Failed to match ${type}`);
       }
       pointer += whole.length;
-      if (getContent) {
-        if (type === "string") {
-          return {
-            type,
-            content: content.substring(1, content.length - 1) // remove ""
-          };
-        } else {
-          return { type, content };
-        }
-      } else {
-        return { type };
+      if (type === "string") {
+        // remove wrapping ""
+        content = content.substring(1, content.length - 1);
       }
+      return { type, content };
     } else {
       return null;
     }
@@ -63,8 +52,8 @@ export let tokenize = (input: string): Token[] => {
     match("\\]", "bracket-right"),
     match(",", "comma"),
     match(":", "colon"),
-    match(isNUMBER, "number", true),
-    match(isSTRING, "string", true)
+    match(isNUMBER, "number"),
+    match(isSTRING, "string")
   ];
 
   while (pointer < input.length) {
