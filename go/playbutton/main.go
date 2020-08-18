@@ -13,6 +13,7 @@ import (
 func main() {
 	radius := flag.Int("r", -1, "radius of button")
 	output := flag.String("o", "output.jpg", "output filename")
+	label := flag.String("l", "00:51", "some text, e.g. viedeo duration")
 
 	flag.Parse()
 
@@ -33,7 +34,7 @@ func main() {
 	}
 	f.Close()
 
-	img = playbutton.Button(img, *radius)
+	img = playbutton.Button(img, *radius, *label)
 	f, err = os.Create(*output)
 	if err != nil {
 		log.Fatal(err)
