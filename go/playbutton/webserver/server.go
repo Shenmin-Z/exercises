@@ -6,5 +6,6 @@ import (
 
 func Serve() {
 	static()
+	generate()
 	http.ListenAndServe(":3000", nil)
 }

@@ -29,7 +29,7 @@ func static() {
 	}
 
 	http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
+		if r.Method != http.MethodGet {
 			http.Error(w, "Method Not Supported", http.StatusMethodNotAllowed)
 			return
 		}

@@ -39,7 +39,7 @@ func Button(img image.Image, radius int, label string) image.Image {
 	dc.SetRGBA(1, 1, 1, .95)
 	dc.Fill()
 
-	if err := dc.LoadFontFace("./playbutton/arial.ttf", h/10); err != nil {
+	if err := dc.LoadFontFace("button/arial.ttf", h/10); err != nil {
 		panic(err)
 	}
 	sw, sh := dc.MeasureString(label)
