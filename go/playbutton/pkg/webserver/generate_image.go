@@ -19,13 +19,20 @@ func generate() {
 			return
 		}
 
+		radius, err := strconv.ParseFloat(r.URL.Query().Get("radius"), 64)
+		if err != nil {
+			http.Error(rw, "Radius should be a number.", http.StatusBadRequest)
+			return
+		}
+		label := r.URL.Query().Get("label")
+
 		img, _, err := image.Decode(r.Body)
 		if err != nil {
 			http.Error(rw, "Failed To Decode Image", http.StatusBadRequest)
 			return
 		}
 
-		img, err = button.Button(img, -1, "aaa")
+		img, err = button.Button(img, radius, label)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return

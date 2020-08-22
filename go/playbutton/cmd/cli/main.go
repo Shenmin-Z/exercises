@@ -6,10 +6,12 @@ import (
 	"image/jpeg"
 	"log"
 	"os"
+
+	"github.com/shenmin-z/draw/pkg/draw"
 )
 
 func Cmd() {
-	radius := flag.Int("r", -1, "radius of button")
+	radius := flag.Float64("r", -1, "radius of button")
 	output := flag.String("o", "output.jpg", "output filename")
 	label := flag.String("l", "00:51", "some text, e.g. viedeo duration")
 
@@ -32,7 +34,7 @@ func Cmd() {
 	}
 	f.Close()
 
-	img, err = Button(img, *radius, *label)
+	img, err = button.Button(img, *radius, *label)
 	if err != nil {
 		log.Fatal(err)
 	}
