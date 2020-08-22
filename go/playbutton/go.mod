@@ -1,4 +1,4 @@
-module github.com/shenmin-z/playbutton
+module github.com/shenmin-z/draw
 
 go 1.14
 

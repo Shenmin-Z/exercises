@@ -12,7 +12,7 @@ import (
 func static() {
 	files := make(map[string]struct{})
 
-	err := filepath.Walk("webserver/static", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk("client/public", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -20,7 +20,7 @@ func static() {
 			return nil
 		}
 
-		files[path[len("webserver"):]] = struct{}{}
+		files[path[len("client"):]] = struct{}{}
 		return nil
 	})
 
@@ -28,7 +28,7 @@ func static() {
 		panic(err)
 	}
 
-	http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/public/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method Not Supported", http.StatusMethodNotAllowed)
 			return
@@ -38,7 +38,7 @@ func static() {
 			return
 		}
 
-		f, err := os.Open("webserver" + r.URL.Path)
+		f, err := os.Open("client" + r.URL.Path)
 		defer f.Close()
 		if err != nil {
 			log.Fatal(err)
@@ -64,7 +64,7 @@ func static() {
 			http.Error(rw, "Page Does Not Exsit", http.StatusNotFound)
 			return
 		}
-		f, err := os.Open("webserver/static/index.html")
+		f, err := os.Open("client/public/index.html")
 		defer f.Close()
 		if err != nil {
 			log.Fatal(err)

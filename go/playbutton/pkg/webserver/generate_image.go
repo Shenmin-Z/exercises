@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/shenmin-z/playbutton/button"
+	"github.com/shenmin-z/draw/pkg/draw"
 )
 
 func generate() {
@@ -25,7 +25,11 @@ func generate() {
 			return
 		}
 
-		img = button.Button(img, -1, "aaa")
+		img, err = button.Button(img, -1, "aaa")
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		opt := jpeg.Options{
 			Quality: 90,
 		}

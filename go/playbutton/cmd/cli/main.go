@@ -32,7 +32,10 @@ func Cmd() {
 	}
 	f.Close()
 
-	img = Button(img, *radius, *label)
+	img, err = Button(img, *radius, *label)
+	if err != nil {
+		log.Fatal(err)
+	}
 	f, err = os.Create(*output)
 	if err != nil {
 		log.Fatal(err)
